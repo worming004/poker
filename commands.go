@@ -1,30 +1,130 @@
 package main
 
 import (
+	"fmt"
 	"log"
 )
 
 type action string
 
-type command struct {
-	currentPlayer string
-	action        action
+const (
+	actionAddPlayer        = "actionAddPlayer"
+	actionPlayerSelectCard = "actionPlayerSelectCard"
+	actionRoomShowCard     = "actionRoomShowCard"
+	actionRoomResetCard    = "actionRoomResetCard"
+)
+
+type invalidCommand struct{}
+
+func (invcmd invalidCommand) Error() string {
+	return "Invalid commande"
+}
+
+type playerNotFoundError struct {
+	playerID int
+}
+
+func (p playerNotFoundError) Error() string {
+	return fmt.Sprintf("player %d not found", p.playerID)
+}
+
+type Command struct {
+	PlayerID int
+	RoomID   int
+	Action   action
+	Payload  map[string]string
 }
 
 type funcCommand interface {
-	Do(*hub) error
+	Do(*room) error
 }
 
 type addPlayerCommand struct {
 	playerName string
+	playerID   int
+	roomID     int
+	client     *virtualClient
 }
 
-func (cmd addPlayerCommand) Do(h *hub) error {
-	h.party.players = append(h.party.players, playerSelectionState{player: player{name: cmd.playerName}})
-	log.Println("cmd received")
+func (cmd addPlayerCommand) Do(p *room) error {
+	p.Players[cmd.playerID] = newPlayerSelectionState(cmd.playerName)
+	log.Printf("cmd received, player %s\n", cmd.playerName)
+	if cmd.client != nil && cmd.client.Conn != nil {
+		cmd.client.Conn.WriteJSON(ServerAction{
+			ActionType: "refreshCards",
+			Payload: struct {
+				Cards []Card `json:"cards"`
+			}{
+				Cards: p.SetOfCards,
+			},
+		})
+	}
 	return nil
 }
 
-func commandFactory(cmd command) funcCommand {
-	return addPlayerCommand{"worming"}
+type playerSelectCardCommand struct {
+	playerID int
+	card     Card
+}
+
+func (cmd playerSelectCardCommand) Do(p *room) error {
+	if !p.SetOfCards.contains(cmd.card) {
+		return invalidCommand{}
+	}
+	// do not update cards after revealing it
+	if p.RoomState == roomShow {
+		return nil
+	}
+	if player, ok := p.Players[cmd.playerID]; ok {
+		player.Card = string(cmd.card)
+		player.PlayerState = playerSelectedCard
+		return nil
+	}
+	return playerNotFoundError{cmd.playerID}
+}
+
+type roomShowCommand struct{}
+
+func (cmd roomShowCommand) Do(p *room) error {
+	p.RoomState = roomShow
+	return nil
+}
+
+type roomResetCommand struct{}
+
+func (cmd roomResetCommand) Do(p *room) error {
+	p.RoomState = roomSelecting
+	for _, playerState := range p.Players {
+		playerState.Card = ""
+		playerState.PlayerState = playerNoSelectedCard
+	}
+	return nil
+}
+
+type noCommand struct{}
+
+func (n noCommand) Do(p *room) error {
+	fmt.Println("no command associated")
+	return nil
+}
+
+func commandFactory(cmd Command, client *virtualClient) funcCommand {
+	if cmd.Action == actionAddPlayer {
+		return addPlayerCommand{
+			playerName: cmd.Payload["PlayerName"],
+			playerID:   cmd.PlayerID,
+			roomID:     cmd.RoomID,
+			client:     client,
+		}
+	}
+	if cmd.Action == actionPlayerSelectCard {
+		return playerSelectCardCommand{playerID: cmd.PlayerID, card: Card(cmd.Payload["Card"])}
+	}
+	if cmd.Action == actionRoomShowCard {
+		return roomShowCommand{}
+	}
+	if cmd.Action == actionRoomResetCard {
+		return roomResetCommand{}
+	}
+	return noCommand{}
 }

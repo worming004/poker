@@ -1,0 +1,49 @@
+li.noselection {
+  color: gray;
+}
+
+li.selection {
+  color: green;
+}
+
+.player-list {
+  margin: 3px;
+}
+
+button.selected {
+  background-color: green;
+}
+
+.cardbutton {
+  width: 100px;
+  height: 140px;
+  border-style: solid;
+  border: 17px;
+  padding: 5px;
+  margin-top: 5px;
+  margin-bottom: 5px;
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.two-column {
+  flex: 20%;
+}
+
+.column {
+  flex-grow: 4;
+}
+
+.card {
+  border-style: solid;
+  border-radius: 1px;
+  margin: 3px;
+}
+
+.bottom {
+  position: absolute;
+  bottom: 0px;
+}
