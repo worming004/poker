@@ -39,7 +39,7 @@ jobs:
         mkdir ./output/static/
         cp ./static/** ./output/static
         mkdir ./output/html/
-        cp ./static/** ./output/html
+        cp ./html/** ./output/html
       
     - name: Push artifact
       uses: actions/upload-artifact@v2
@@ -48,7 +48,7 @@ jobs:
         path: ./output/
         
   deploy:
-    name: deploy application
+    name: Deploy
     needs: [build]
     runs-on: ubuntu-latest
     steps:
@@ -66,3 +66,24 @@ jobs:
           REMOTE_HOST: ${{ secrets.REMOTE_HOST }}
           REMOTE_USER: ${{ secrets.REMOTE_USER }}
           TARGET: ${{ secrets.REMOTE_TARGET }}
+
+  
+  restart:
+    name: Restart service
+    needs: [deploy]
+    runs-on: ubuntu-latest
+    steps:
+      - name: stop service
+        uses: garygrossgarten/github-action-ssh@release
+        with:
+          command: /bin/systemctl stop poker
+          host: ${{ secrets.REMOTE_HOST }}
+          username: ${{ secrets.REMOTE_USER }}
+          privateKey: ${{ secrets.SERVER_SSH_KEY}}
+      - name: start service
+        uses: garygrossgarten/github-action-ssh@release
+        with:
+          command: /bin/systemctl start poker
+          host: ${{ secrets.REMOTE_HOST }}
+          username: ${{ secrets.REMOTE_USER }}
+          privateKey: ${{ secrets.SERVER_SSH_KEY}}
