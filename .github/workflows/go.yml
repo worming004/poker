@@ -42,3 +42,22 @@ jobs:
       with:
         name: drop
         path: ./output/
+        
+  deploy:
+    name: deploy application
+    runs-on: ubuntu-latest
+    steps:
+      - name: download drop artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: drop
+
+      - name: Deploy to Staging server
+        uses: easingthemes/ssh-deploy@v2.1.5
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SERVER_SSH_KEY }}
+          ARGS: "-rltgoDzvO"
+          SOURCE: "./"
+          REMOTE_HOST: ${{ secrets.REMOTE_HOST }}
+          REMOTE_USER: ${{ secrets.REMOTE_USER }}
+          TARGET: ${{ secrets.REMOTE_TARGET }}
