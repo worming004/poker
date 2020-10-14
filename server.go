@@ -11,11 +11,11 @@ import (
 func getApplicationServer(h *hub, c conf) *http.Server {
 	mux := http.NewServeMux()
 	indexHandler := getIndexHandler(Model{Hostname: c.hostname})
+	mux.HandleFunc("/", indexHandler)
 	mux.Handle("/static/", getStaticHandler("/static/"))
 	mux.HandleFunc("/connect", h.handleSocket)
 	mux.HandleFunc("/cards", getCardHandler(h))
 	mux.HandleFunc("/newid", getNewIDHandler())
-	mux.HandleFunc("/", indexHandler)
 	return &http.Server{
 		Addr:    "localhost:6000",
 		Handler: mux,
@@ -24,7 +24,7 @@ func getApplicationServer(h *hub, c conf) *http.Server {
 
 func getStaticHandler(prefix string) http.Handler {
 	fs := http.FileServer(http.Dir("./static"))
-	if prefix != "" {
+	if prefix == "" {
 		return fs
 	}
 	return http.StripPrefix(prefix, fs)
