@@ -45,6 +45,7 @@ jobs:
         
   deploy:
     name: deploy application
+    needs: [build]
     runs-on: ubuntu-latest
     steps:
       - name: download drop artifact
