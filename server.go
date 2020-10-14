@@ -73,6 +73,9 @@ func getNewIDHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		log.Println("serving id")
 		current++
+		if current == 4294967294 {
+			current = 0
+		}
 		res := getNewID{current}
 		b, err := json.Marshal(res)
 		if err != nil {
