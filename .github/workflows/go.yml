@@ -36,8 +36,8 @@ jobs:
     
     - name: Prepare public files
       run: |
-        mkdir ./static/output/
-        cp ./static/** ./static/output/
+        mkdir ./output/static/
+        cp ./static/** ./output/static
       
     - name: Push artifact
       uses: actions/upload-artifact@v2
