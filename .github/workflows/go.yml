@@ -29,7 +29,16 @@ jobs:
         fi
 
     - name: Build
-      run: go build -v .
+      run: go build -v -o output/poker .
 
     - name: Test
       run: go test -v .
+    
+    - name: Prepare public files
+      run: cp ./static/** ./static/output/
+      
+    - name: Push artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: drop
+        path: ./output/
