@@ -35,7 +35,9 @@ jobs:
       run: go test -v .
     
     - name: Prepare public files
-      run: cp ./static/** ./static/output/
+      run: |
+        mkdir ./static/output/
+        cp ./static/** ./static/output/
       
     - name: Push artifact
       uses: actions/upload-artifact@v2
