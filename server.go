@@ -2,14 +2,17 @@ package main
 
 import (
 	"encoding/json"
+	"html/template"
 	"log"
 	"net/http"
 	"strconv"
 )
 
-func getApplicationServer(h *hub) *http.Server {
+func getApplicationServer(h *hub, c conf) *http.Server {
 	mux := http.NewServeMux()
-	mux.HandleFunc("/", serveStatic)
+	indexHandler := getIndexHandler(Model{Hostname: c.hostname})
+	mux.HandleFunc("/", indexHandler)
+	mux.HandleFunc("/index.html", indexHandler)
 	mux.HandleFunc("/static", serveStatic)
 	mux.HandleFunc("/connect", h.handleSocket)
 	mux.HandleFunc("/cards", getCardHandler(h))
@@ -17,6 +20,20 @@ func getApplicationServer(h *hub) *http.Server {
 	return &http.Server{
 		Addr:    "localhost:6000",
 		Handler: mux,
+	}
+}
+
+type Model struct {
+	Hostname string
+}
+
+func getIndexHandler(m Model) http.HandlerFunc {
+	tmpl := template.Must(template.ParseGlob("./html/index.gohtml"))
+	return func(w http.ResponseWriter, r *http.Request) {
+		err := tmpl.Execute(w, m)
+		if err != nil {
+			log.Panic(err)
+		}
 	}
 }
 
