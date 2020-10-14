@@ -38,6 +38,8 @@ jobs:
       run: |
         mkdir ./output/static/
         cp ./static/** ./output/static
+        mkdir ./output/html/
+        cp ./static/** ./output/html
       
     - name: Push artifact
       uses: actions/upload-artifact@v2
