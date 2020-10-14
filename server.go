@@ -11,16 +11,23 @@ import (
 func getApplicationServer(h *hub, c conf) *http.Server {
 	mux := http.NewServeMux()
 	indexHandler := getIndexHandler(Model{Hostname: c.hostname})
-	mux.HandleFunc("/", indexHandler)
-	mux.HandleFunc("/index.html", indexHandler)
-	mux.HandleFunc("/static", serveStatic)
+	mux.Handle("/static/", getStaticHandler("/static/"))
 	mux.HandleFunc("/connect", h.handleSocket)
 	mux.HandleFunc("/cards", getCardHandler(h))
 	mux.HandleFunc("/newid", getNewIDHandler())
+	mux.HandleFunc("/", indexHandler)
 	return &http.Server{
 		Addr:    "localhost:6000",
 		Handler: mux,
 	}
+}
+
+func getStaticHandler(prefix string) http.Handler {
+	fs := http.FileServer(http.Dir("./static"))
+	if prefix != "" {
+		return fs
+	}
+	return http.StripPrefix(prefix, fs)
 }
 
 type Model struct {
@@ -35,12 +42,6 @@ func getIndexHandler(m Model) http.HandlerFunc {
 			log.Panic(err)
 		}
 	}
-}
-
-func serveStatic(w http.ResponseWriter, r *http.Request) {
-	fs := http.FileServer(http.Dir("./static"))
-	log.Println("serving static file")
-	fs.ServeHTTP(w, r)
 }
 
 func getCardHandler(h *hub) http.HandlerFunc {
