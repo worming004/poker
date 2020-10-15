@@ -162,6 +162,6 @@ func applyCommand(ctx context.Context, p *room, socketCommand Command) {
 }
 
 func newTestContext() context.Context {
-	logger := logrus.New()
+	logger := logrus.NewEntry(logrus.New())
 	return context.WithValue(context.Background(), loggerKey, logger)
 }

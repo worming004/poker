@@ -36,7 +36,7 @@ func getLogger(ctx context.Context) *logrus.Entry {
 
 	tlogger, ok := logger.(*logrus.Entry)
 	if !ok {
-		logrus.Fatal("Not a *logrus.Logger")
+		logrus.Fatal("Not a *logrus.Entry")
 	}
 
 	return tlogger
