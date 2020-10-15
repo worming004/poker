@@ -72,8 +72,8 @@
                 }
                 const roomInt = parseInt(room.value);
                 let event = {
-                    PlayerID: playerID,
                     Action: 'actionAddPlayer',
+                    PlayerID: playerID,
                     RoomID: roomInt,
                     Payload: {
                         PlayerName: player.value
@@ -89,8 +89,8 @@
         }
         function sendCardSelection(val) {
             let event = {
-                PlayerID: playerID,
                 Action: 'actionPlayerSelectCard',
+                PlayerID: playerID,
                 RoomID: roomID,
                 Payload: {
                     Card: val
