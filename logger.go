@@ -47,3 +47,8 @@ func pushNewSendID(ctx context.Context) context.Context {
 	newLogger := logger.WithField("sendid", uuid.New())
 	return context.WithValue(ctx, loggerKey, newLogger)
 }
+
+func logNumberOfCurrentSession(logger *logrus.Logger, h *hub) {
+	logger.Infof("Number of current room : %v", len(h.room))
+	logger.Infof("Number of current clients : %v", len(h.clients))
+}

@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"time"
 
 	"github.com/sirupsen/logrus"
 )
@@ -21,6 +22,15 @@ func main() {
 	}
 	h := newHub(c)
 	server := getApplicationServer(h, c)
+
+	go func() {
+		ticker := time.NewTicker(12 * time.Hour)
+		logger := logrus.New()
+		for {
+			<-ticker.C
+			logNumberOfCurrentSession(logger, h)
+		}
+	}()
 
 	logrus.Info("Starting server")
 	logrus.Panic(server.ListenAndServe())
