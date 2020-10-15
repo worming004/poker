@@ -1,25 +1,42 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"html/template"
 	"log"
 	"net/http"
 	"strconv"
+
+	"github.com/google/uuid"
+	"github.com/gorilla/mux"
 )
 
+type contextKey int
+
+const correlationID contextKey = iota
+
 func getApplicationServer(h *hub, c conf) *http.Server {
-	mux := http.NewServeMux()
+	mux := mux.NewRouter()
 	indexHandler := getIndexHandler(Model{Hostname: c.hostname})
 	mux.HandleFunc("/", indexHandler)
 	mux.Handle("/static/", getStaticHandler("/static/"))
 	mux.HandleFunc("/connect", h.handleSocket)
 	mux.HandleFunc("/cards", getCardHandler(h))
 	mux.HandleFunc("/newid", getNewIDHandler())
+	mux.Use(correlationIDMiddleware)
 	return &http.Server{
 		Addr:    "localhost:6000",
 		Handler: mux,
 	}
+}
+
+func correlationIDMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		corrID := uuid.New()
+		corrIDCtx := context.WithValue(r.Context(), correlationID, corrID)
+		next.ServeHTTP(w, r.WithContext(corrIDCtx))
+	})
 }
 
 func getStaticHandler(prefix string) http.Handler {
