@@ -1,10 +1,14 @@
 package main
 
 import (
+	"context"
 	"testing"
+
+	"github.com/sirupsen/logrus"
 )
 
 func TestAddPlayerCommand(t *testing.T) {
+	ctx := newTestContext()
 	playerID := 123
 	roomID := 456
 	playerName := "worming"
@@ -13,9 +17,9 @@ func TestAddPlayerCommand(t *testing.T) {
 		PlayerID: playerID,
 	}
 
-	addPlayer := commandFactory(socketCommand, &virtualClient{})
+	addPlayer := commandFactory(ctx, socketCommand, &virtualClient{})
 	_, p := newSinglePlayerHub(playerID, roomID, playerName)
-	addPlayer.Do(p)
+	addPlayer.Do(ctx, p)
 
 	if len(p.Players) != 1 {
 		t.Errorf("expected to register a player. Expected 1 player, got %d", len(p.Players))
@@ -23,6 +27,7 @@ func TestAddPlayerCommand(t *testing.T) {
 }
 
 func TestPlayerSelectCardCommand(t *testing.T) {
+	ctx := newTestContext()
 	expectedCardValue := "3"
 	playerID := 123
 	roomID := 456
@@ -36,7 +41,7 @@ func TestPlayerSelectCardCommand(t *testing.T) {
 		Payload:  payload,
 	}
 	_, p := newSinglePlayerHub(playerID, roomID, playerName)
-	applyCommand(p, socketCommand)
+	applyCommand(ctx, p, socketCommand)
 
 	if len(p.Players) != 1 {
 		t.Errorf("expected to register a player. Expected 1 player, got %d", len(p.Players))
@@ -54,6 +59,7 @@ func TestPlayerSelectCardCommand(t *testing.T) {
 }
 
 func TestPlayerSelectCardInvalidCard(t *testing.T) {
+	ctx := newTestContext()
 	expectedCardValue := "inexisting"
 	playerName := "worming"
 	playerID := 123
@@ -67,7 +73,7 @@ func TestPlayerSelectCardInvalidCard(t *testing.T) {
 		Payload:  payload,
 	}
 	_, p := newSinglePlayerHub(playerID, roomID, playerName)
-	applyCommand(p, socketCommand)
+	applyCommand(ctx, p, socketCommand)
 
 	if len(p.Players) != 1 {
 		t.Errorf("expected to register a player. Expected 1 player, got %d", len(p.Players))
@@ -86,6 +92,7 @@ func TestPlayerSelectCardInvalidCard(t *testing.T) {
 }
 
 func TestResetCard(t *testing.T) {
+	ctx := newTestContext()
 	playerName := "worming"
 	playerID := 123
 	roomID := 456
@@ -96,7 +103,7 @@ func TestResetCard(t *testing.T) {
 	_, p := newSinglePlayerHub(playerID, roomID, playerName)
 	p.Players[playerID].Card = "should be reset"
 	p.Players[playerID].PlayerState = playerSelectedCard
-	applyCommand(p, socketCommand)
+	applyCommand(ctx, p, socketCommand)
 
 	if len(p.Players) != 1 {
 		t.Errorf("expected to register a player. Expected 1 player, got %d", len(p.Players))
@@ -113,6 +120,7 @@ func TestResetCard(t *testing.T) {
 }
 
 func TestSelectCardDuringRevealIsDoingNothing(t *testing.T) {
+	ctx := newTestContext()
 	playerName := "worming"
 	playerID := 123
 	roomID := 456
@@ -122,7 +130,7 @@ func TestSelectCardDuringRevealIsDoingNothing(t *testing.T) {
 	}
 	_, p := newSinglePlayerHub(playerID, roomID, playerName)
 	p.Players[playerID].Card = "3"
-	applyCommand(p, socketCommand)
+	applyCommand(ctx, p, socketCommand)
 
 	payload := make(map[string]string)
 	payload["Card"] = "5"
@@ -131,7 +139,7 @@ func TestSelectCardDuringRevealIsDoingNothing(t *testing.T) {
 		PlayerID: playerID,
 		Payload:  payload,
 	}
-	applyCommand(p, socketCommandSelectCard)
+	applyCommand(ctx, p, socketCommandSelectCard)
 
 	wormingPlayer := p.Players[playerID]
 
@@ -148,7 +156,12 @@ func newSinglePlayerHub(playerID, roomID int, playerName string) (*hub, *room) {
 	return h, room
 }
 
-func applyCommand(p *room, socketCommand Command) {
-	cmd := commandFactory(socketCommand, &virtualClient{})
-	cmd.Do(p)
+func applyCommand(ctx context.Context, p *room, socketCommand Command) {
+	cmd := commandFactory(ctx, socketCommand, &virtualClient{})
+	cmd.Do(ctx, p)
+}
+
+func newTestContext() context.Context {
+	logger := logrus.New()
+	return context.WithValue(context.Background(), loggerKey, logger)
 }

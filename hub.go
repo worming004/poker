@@ -1,8 +1,8 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
-	"log"
 	"net/http"
 	"strconv"
 	"time"
@@ -69,6 +69,10 @@ type ServerAction struct {
 }
 
 func (room *room) broadcastCurrentState() error {
+	// happens when user quit before connecting to a room
+	if room == nil {
+		return nil
+	}
 	for _, client := range room.Connections {
 		client.WriteJSON(ServerAction{
 			ActionType: "refreshState",
@@ -89,8 +93,8 @@ func newHub(c conf) *hub {
 	return h
 }
 
-func (h *hub) handleCommand(cmd Command, currentClient *virtualClient) {
-	realCommand := commandFactory(cmd, currentClient)
+func (h *hub) handleCommand(ctx context.Context, cmd Command, currentClient *virtualClient) {
+	realCommand := commandFactory(ctx, cmd, currentClient)
 	if cmd, ok := realCommand.(addPlayerCommand); ok {
 		currentClient.roomID = cmd.roomID
 		currentClient.playerID = cmd.playerID
@@ -102,12 +106,15 @@ func (h *hub) handleCommand(cmd Command, currentClient *virtualClient) {
 		time.AfterFunc(4*time.Hour, func() { h.deleteRoom(cmd.RoomID) })
 	}
 	room.Connections[currentClient] = currentClient.Conn
-	realCommand.Do(room)
+	realCommand.Do(ctx, room)
 	room.broadcastCurrentState()
 }
 
 func (h *hub) handleSocket(w http.ResponseWriter, r *http.Request) {
 	password := r.URL.Query()["password"][0]
+	ctx := r.Context()
+	log := getLogger(ctx)
+	log.Println("Attempt to connect")
 	if password != h.password {
 		log.Println("socket invalid due to wrong password")
 		return
@@ -143,15 +150,20 @@ func (h *hub) handleSocket(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			panic(err)
 		}
-		h.handleCommand(cmd, client)
+		h.handleCommand(ctx, cmd, client)
 	}
 }
 
 func (h *hub) disconnect(c *virtualClient) error {
 	delete(h.clients, c)
-	room := h.room[c.roomID]
-	delete(room.Players, c.playerID)
-	delete(room.Connections, c)
+	room, ok := h.room[c.roomID]
+	if ok {
+		delete(room.Players, c.playerID)
+		delete(room.Connections, c)
+		if len(room.Connections) == 0 {
+			h.deleteRoom(c.roomID)
+		}
+	}
 	room.broadcastCurrentState()
 	return nil
 }
@@ -162,8 +174,4 @@ func (h *hub) deleteRoom(roomID int) {
 		c.Close()
 	}
 	delete(h.room, roomID)
-}
-
-func (h *hub) logState() {
-	log.Printf("number of open connection : %d", len(h.clients))
 }

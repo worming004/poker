@@ -1,42 +1,31 @@
 package main
 
 import (
-	"context"
 	"encoding/json"
 	"html/template"
-	"log"
 	"net/http"
 	"strconv"
 
-	"github.com/google/uuid"
+	"github.com/sirupsen/logrus"
+
 	"github.com/gorilla/mux"
 )
 
-type contextKey int
-
-const correlationID contextKey = iota
+var defaultLogger *logrus.Logger
 
 func getApplicationServer(h *hub, c conf) *http.Server {
 	mux := mux.NewRouter()
 	indexHandler := getIndexHandler(Model{Hostname: c.hostname})
-	mux.HandleFunc("/", indexHandler)
-	mux.Handle("/static/", getStaticHandler("/static/"))
-	mux.HandleFunc("/connect", h.handleSocket)
-	mux.HandleFunc("/cards", getCardHandler(h))
-	mux.HandleFunc("/newid", getNewIDHandler())
-	mux.Use(correlationIDMiddleware)
+	mux.HandleFunc("/", indexHandler).Methods("GET")
+	mux.Handle("/static/{route}", getStaticHandler("/static/")).Methods("GET")
+	mux.HandleFunc("/connect", h.handleSocket).Methods("GET")
+	mux.HandleFunc("/cards", getCardHandler(h)).Methods("GET")
+	mux.HandleFunc("/newid", getNewIDHandler()).Methods("GET")
+	mux.Use(loggerMiddleware)
 	return &http.Server{
 		Addr:    "localhost:6000",
 		Handler: mux,
 	}
-}
-
-func correlationIDMiddleware(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		corrID := uuid.New()
-		corrIDCtx := context.WithValue(r.Context(), correlationID, corrID)
-		next.ServeHTTP(w, r.WithContext(corrIDCtx))
-	})
 }
 
 func getStaticHandler(prefix string) http.Handler {
@@ -56,7 +45,7 @@ func getIndexHandler(m Model) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		err := tmpl.Execute(w, m)
 		if err != nil {
-			log.Panic(err)
+			logrus.Panic(err)
 		}
 	}
 }
@@ -88,7 +77,7 @@ type getNewID struct {
 func getNewIDHandler() http.HandlerFunc {
 	current := 0
 	return func(w http.ResponseWriter, r *http.Request) {
-		log.Println("serving id")
+		logrus.Println("serving id")
 		current++
 		if current == 4294967294 {
 			current = 0
@@ -96,7 +85,7 @@ func getNewIDHandler() http.HandlerFunc {
 		res := getNewID{current}
 		b, err := json.Marshal(res)
 		if err != nil {
-			log.Printf("err while parsing res %s\n", err)
+			logrus.Printf("err while parsing res %s\n", err)
 		}
 		w.Write(b)
 	}

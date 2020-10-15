@@ -1,8 +1,8 @@
 package main
 
 import (
+	"context"
 	"fmt"
-	"log"
 )
 
 type action string
@@ -36,7 +36,7 @@ type Command struct {
 }
 
 type funcCommand interface {
-	Do(*room) error
+	Do(context.Context, *room) error
 }
 
 type addPlayerCommand struct {
@@ -46,9 +46,9 @@ type addPlayerCommand struct {
 	client     *virtualClient
 }
 
-func (cmd addPlayerCommand) Do(p *room) error {
+func (cmd addPlayerCommand) Do(ctx context.Context, p *room) error {
 	p.Players[cmd.playerID] = newPlayerSelectionState(cmd.playerName)
-	log.Printf("cmd received, player %s\n", cmd.playerName)
+	getLogger(ctx).Printf("cmd received, player %s\n", cmd.playerName)
 	if cmd.client != nil && cmd.client.Conn != nil {
 		cmd.client.Conn.WriteJSON(ServerAction{
 			ActionType: "refreshCards",
@@ -67,7 +67,7 @@ type playerSelectCardCommand struct {
 	card     Card
 }
 
-func (cmd playerSelectCardCommand) Do(p *room) error {
+func (cmd playerSelectCardCommand) Do(ctx context.Context, p *room) error {
 	if !p.SetOfCards.contains(cmd.card) {
 		return invalidCommand{}
 	}
@@ -85,14 +85,14 @@ func (cmd playerSelectCardCommand) Do(p *room) error {
 
 type roomShowCommand struct{}
 
-func (cmd roomShowCommand) Do(p *room) error {
+func (cmd roomShowCommand) Do(ctx context.Context, p *room) error {
 	p.RoomState = roomShow
 	return nil
 }
 
 type roomResetCommand struct{}
 
-func (cmd roomResetCommand) Do(p *room) error {
+func (cmd roomResetCommand) Do(ctx context.Context, p *room) error {
 	p.RoomState = roomSelecting
 	for _, playerState := range p.Players {
 		playerState.Card = ""
@@ -103,12 +103,12 @@ func (cmd roomResetCommand) Do(p *room) error {
 
 type noCommand struct{}
 
-func (n noCommand) Do(p *room) error {
+func (n noCommand) Do(ctx context.Context, p *room) error {
 	fmt.Println("no command associated")
 	return nil
 }
 
-func commandFactory(cmd Command, client *virtualClient) funcCommand {
+func commandFactory(ctx context.Context, cmd Command, client *virtualClient) funcCommand {
 	if cmd.Action == actionAddPlayer {
 		return addPlayerCommand{
 			playerName: cmd.Payload["PlayerName"],
