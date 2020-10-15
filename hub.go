@@ -95,6 +95,8 @@ func newHub(c conf) *hub {
 
 func (h *hub) handleCommand(ctx context.Context, cmd Command, currentClient *virtualClient) {
 	realCommand := commandFactory(ctx, cmd, currentClient)
+	getLogger(ctx).Infof("command received : %+v", realCommand)
+
 	if cmd, ok := realCommand.(addPlayerCommand); ok {
 		currentClient.roomID = cmd.roomID
 		currentClient.playerID = cmd.playerID
@@ -147,7 +149,6 @@ func (h *hub) handleSocket(w http.ResponseWriter, r *http.Request) {
 			log.Printf("close ws because of %s\n", err)
 			break
 		}
-		log.Printf("received : %s", string(message))
 		err = json.Unmarshal(message, &cmd)
 		if err != nil {
 			panic(err)

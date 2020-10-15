@@ -48,7 +48,6 @@ type addPlayerCommand struct {
 
 func (cmd addPlayerCommand) Do(ctx context.Context, p *room) error {
 	p.Players[cmd.playerID] = newPlayerSelectionState(cmd.playerName)
-	getLogger(ctx).Printf("cmd received, player %s\n", cmd.playerName)
 	if cmd.client != nil && cmd.client.Conn != nil {
 		cmd.client.Conn.WriteJSON(ServerAction{
 			ActionType: "refreshCards",
