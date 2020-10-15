@@ -41,3 +41,9 @@ func getLogger(ctx context.Context) *logrus.Entry {
 
 	return tlogger
 }
+
+func pushNewSendID(ctx context.Context) context.Context {
+	logger := getLogger(ctx)
+	newLogger := logger.WithField("sendid", uuid.New())
+	return context.WithValue(ctx, loggerKey, newLogger)
+}

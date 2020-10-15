@@ -140,6 +140,8 @@ func (h *hub) handleSocket(w http.ResponseWriter, r *http.Request) {
 	for {
 		var cmd Command
 		_, message, err := c.ReadMessage()
+		ctx = pushNewSendID(ctx)
+		log = getLogger(ctx)
 		if err != nil {
 			h.disconnect(client)
 			log.Printf("close ws because of %s\n", err)
