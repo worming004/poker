@@ -28,7 +28,7 @@ func (p playerNotFoundError) Error() string {
 	return fmt.Sprintf("player %d not found", p.playerID)
 }
 
-type Command struct {
+type ExternalCommand struct {
 	PlayerID int
 	RoomID   int
 	Action   action
@@ -107,7 +107,7 @@ func (n noCommand) Do(ctx context.Context, p *room) error {
 	return nil
 }
 
-func commandFactory(ctx context.Context, cmd Command, client *virtualClient) funcCommand {
+func commandFactory(ctx context.Context, cmd ExternalCommand, client *virtualClient) funcCommand {
 	if cmd.Action == actionAddPlayer {
 		return addPlayerCommand{
 			playerName: cmd.Payload["PlayerName"],

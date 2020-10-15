@@ -93,7 +93,7 @@ func newHub(c conf) *hub {
 	return h
 }
 
-func (h *hub) handleCommand(ctx context.Context, cmd Command, currentClient *virtualClient) {
+func (h *hub) handleCommand(ctx context.Context, cmd ExternalCommand, currentClient *virtualClient) {
 	realCommand := commandFactory(ctx, cmd, currentClient)
 	getLogger(ctx).Infof("command received : %+v", realCommand)
 
@@ -140,7 +140,7 @@ func (h *hub) handleSocket(w http.ResponseWriter, r *http.Request) {
 	h.clients[client] = true
 	defer c.Close()
 	for {
-		var cmd Command
+		var cmd ExternalCommand
 		_, message, err := c.ReadMessage()
 		ctx = pushNewSendID(ctx)
 		log = getLogger(ctx)

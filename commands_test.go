@@ -12,7 +12,7 @@ func TestAddPlayerCommand(t *testing.T) {
 	playerID := 123
 	roomID := 456
 	playerName := "worming"
-	socketCommand := Command{
+	socketCommand := ExternalCommand{
 		Action:   actionAddPlayer,
 		PlayerID: playerID,
 	}
@@ -35,7 +35,7 @@ func TestPlayerSelectCardCommand(t *testing.T) {
 
 	payload := make(map[string]string)
 	payload["Card"] = expectedCardValue
-	socketCommand := Command{
+	socketCommand := ExternalCommand{
 		Action:   actionPlayerSelectCard,
 		PlayerID: playerID,
 		Payload:  payload,
@@ -67,7 +67,7 @@ func TestPlayerSelectCardInvalidCard(t *testing.T) {
 
 	payload := make(map[string]string)
 	payload["Card"] = expectedCardValue
-	socketCommand := Command{
+	socketCommand := ExternalCommand{
 		Action:   actionPlayerSelectCard,
 		PlayerID: playerID,
 		Payload:  payload,
@@ -96,7 +96,7 @@ func TestResetCard(t *testing.T) {
 	playerName := "worming"
 	playerID := 123
 	roomID := 456
-	socketCommand := Command{
+	socketCommand := ExternalCommand{
 		Action:   actionRoomResetCard,
 		PlayerID: playerID,
 	}
@@ -124,7 +124,7 @@ func TestSelectCardDuringRevealIsDoingNothing(t *testing.T) {
 	playerName := "worming"
 	playerID := 123
 	roomID := 456
-	socketCommand := Command{
+	socketCommand := ExternalCommand{
 		Action:   actionRoomShowCard,
 		PlayerID: playerID,
 	}
@@ -134,7 +134,7 @@ func TestSelectCardDuringRevealIsDoingNothing(t *testing.T) {
 
 	payload := make(map[string]string)
 	payload["Card"] = "5"
-	socketCommandSelectCard := Command{
+	socketCommandSelectCard := ExternalCommand{
 		Action:   actionPlayerSelectCard,
 		PlayerID: playerID,
 		Payload:  payload,
@@ -156,7 +156,7 @@ func newSinglePlayerHub(playerID, roomID int, playerName string) (*hub, *room) {
 	return h, room
 }
 
-func applyCommand(ctx context.Context, p *room, socketCommand Command) {
+func applyCommand(ctx context.Context, p *room, socketCommand ExternalCommand) {
 	cmd := commandFactory(ctx, socketCommand, &virtualClient{})
 	cmd.Do(ctx, p)
 }
