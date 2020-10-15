@@ -17,11 +17,12 @@ button.selected {
 .cardbutton {
   width: 100px;
   height: 140px;
+  font-size: large;
   border-style: solid;
-  border: 17px;
+  border-radius: 17px;
+  border-color: black;
   padding: 5px;
-  margin-top: 5px;
-  margin-bottom: 5px;
+  margin: 5px;
 }
 
 .row {
@@ -46,4 +47,15 @@ button.selected {
 .bottom {
   position: absolute;
   bottom: 0px;
+}
+
+body {
+  background-color: #acc4d6;
+}
+
+.action-button {
+  padding: 10px;
+  margin: 30px;
+  border: none;
+  width: 100px;
 }

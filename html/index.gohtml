@@ -130,9 +130,10 @@
                 <input type="number" id="room" autofocus />
                 <input type="submit" value="Send" id="btnsend" />
             </form>
-            <div id="roomActions" style="display: none;">
-                <button onclick="reveal()">reveal</button>
-                <button onclick="reset()">reset</button>
+            <div id="roomActions" class="row" style="display: none;">
+                <p>Board actions:</p>
+                <button onclick="reveal()" class="action-button">reveal</button>
+                <button onclick="reset()" class="action-button">reset</button>
             </div>
         </div>
     </div>
