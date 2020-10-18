@@ -118,26 +118,28 @@
 </head>
 
 <body>
-    <div class="row">
-        <div id="board" class="two-column card"></div>
-        <div id="menu" class="two-column card">
-            <form id="form">
-                <p>Please, select a name and a room</p>
-                <label for=" player">Nom:</label>
-                <input type="text" id="player" autofocus />
-                <br>
-                <label for="room">Room:</label>
-                <input type="number" id="room" autofocus />
-                <input type="submit" value="Send" id="btnsend" />
-            </form>
-            <div id="roomActions" class="row" style="display: none;">
-                <p>Board actions:</p>
-                <button onclick="reveal()" class="action-button">reveal</button>
-                <button onclick="reset()" class="action-button">reset</button>
+    <div id="index-container">
+        <div class="row">
+            <div id="board" class="two-column card"></div>
+            <div id="menu" class="two-column card">
+                <form id="form">
+                    <p>Please, select a name and a room</p>
+                    <label for=" player">Nom:</label>
+                    <input type="text" id="player" autofocus />
+                    <br>
+                    <label for="room">Room:</label>
+                    <input type="number" id="room" autofocus />
+                    <input type="submit" value="Send" id="btnsend" />
+                </form>
+                <div id="roomActions" class="row" style="display: none;">
+                    <p>Board actions:</p>
+                    <button onclick="reveal()" class="action-button">reveal</button>
+                    <button onclick="reset()" class="action-button">reset</button>
+                </div>
             </div>
         </div>
+        <div id="selection" class="card row"></div>
     </div>
-    <div id="selection" class="card row bottom"></div>
 </body>
 
 </html>

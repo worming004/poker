@@ -17,7 +17,7 @@ type Command struct {
 	Payload map[string]string
 }
 
-var addr = flag.String("addr", "localhost:6000", "http service address")
+var addr = flag.String("addr", "localhost:8080", "http service address")
 var playerName = flag.String("pn", "worming", "player name")
 
 func main() {

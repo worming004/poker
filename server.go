@@ -22,11 +22,18 @@ func getApplicationServer(h *hub, c conf) *http.Server {
 	mux.HandleFunc("/connect", h.handleSocket).Methods("GET")
 	mux.HandleFunc("/cards", getCardHandler(h)).Methods("GET")
 	mux.HandleFunc("/newid", getNewIDHandler()).Methods("GET")
-	mux.Use(loggerMiddleware)
+	mux.Use(loggerMiddleware, allowCors)
 	return &http.Server{
-		Addr:    "localhost:6000",
+		Addr:    "localhost:" + c.port,
 		Handler: mux,
 	}
+}
+
+func allowCors(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Add("Access-Control-Allow-Origin", "*")
+		next.ServeHTTP(w, r)
+	})
 }
 
 func getStaticHandler(prefix string) http.Handler {

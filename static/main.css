@@ -59,3 +59,8 @@ body {
   border: none;
   width: 100px;
 }
+
+#index-container {
+  display: grid;
+  grid-template-rows: auto auto;
+}
