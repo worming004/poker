@@ -19,6 +19,8 @@ li.selection {
   border-color: black;
   padding: 5px;
   margin: 5px;
+
+  transition: background-color 0.3s ease;
 }
 
 .cardbutton:hover {
