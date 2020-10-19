@@ -10,10 +10,6 @@ li.selection {
   margin: 3px;
 }
 
-button.selected {
-  background-color: green;
-}
-
 .cardbutton {
   width: 100px;
   height: 140px;
@@ -23,6 +19,19 @@ button.selected {
   border-color: black;
   padding: 5px;
   margin: 5px;
+}
+
+.cardbutton:hover {
+  background-color: lightgreen;
+}
+
+
+.cardbutton.selected:hover {
+  background-color: green;
+}
+
+button.selected {
+  background-color: green;
 }
 
 .row {
