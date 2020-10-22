@@ -95,7 +95,7 @@ func newHub(c conf) *hub {
 
 func (h *hub) handleCommand(ctx context.Context, cmd ExternalCommand, currentClient *virtualClient) {
 	realCommand := commandFactory(ctx, cmd, currentClient)
-	getLogger(ctx).Infof("command received : %+v", realCommand)
+	getLogger(ctx).Infof("command received %T: %+v", realCommand, realCommand)
 
 	if cmd, ok := realCommand.(addPlayerCommand); ok {
 		currentClient.roomID = cmd.roomID
@@ -105,7 +105,7 @@ func (h *hub) handleCommand(ctx context.Context, cmd ExternalCommand, currentCli
 	if !ok {
 		room = newRoom(cmd.RoomID)
 		h.room[cmd.RoomID] = room
-		time.AfterFunc(4*time.Hour, func() { h.deleteRoom(cmd.RoomID) })
+		time.AfterFunc(4*time.Hour, func() { h.deleteRoom(ctx, cmd.RoomID) })
 	}
 	room.Connections[currentClient] = currentClient.Conn
 	realCommand.Do(ctx, room)
@@ -145,7 +145,7 @@ func (h *hub) handleSocket(w http.ResponseWriter, r *http.Request) {
 		ctx = pushNewSendID(ctx)
 		log = getLogger(ctx)
 		if err != nil {
-			h.disconnect(client)
+			h.disconnect(ctx, client)
 			log.Printf("close ws because of %s\n", err)
 			break
 		}
@@ -157,24 +157,28 @@ func (h *hub) handleSocket(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (h *hub) disconnect(c *virtualClient) error {
+func (h *hub) disconnect(ctx context.Context, c *virtualClient) error {
 	delete(h.clients, c)
 	room, ok := h.room[c.roomID]
 	if ok {
 		delete(room.Players, c.playerID)
 		delete(room.Connections, c)
 		if len(room.Connections) == 0 {
-			h.deleteRoom(c.roomID)
+			h.deleteRoom(ctx, c.roomID)
 		}
 	}
 	room.broadcastCurrentState()
 	return nil
 }
 
-func (h *hub) deleteRoom(roomID int) {
-	p := h.room[roomID]
-	for c := range p.Connections {
-		c.Close()
+func (h *hub) deleteRoom(ctx context.Context, roomID int) {
+	if p, ok := h.room[roomID]; ok {
+		getLogger(ctx).Printf("Deleting roomID %d\n", roomID)
+		for c := range p.Connections {
+			c.Close()
+		}
+		delete(h.room, roomID)
+	} else {
+		getLogger(ctx).Printf("Cannot delete roomID %d because it's not found\n", roomID)
 	}
-	delete(h.room, roomID)
 }
