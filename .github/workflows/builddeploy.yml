@@ -76,14 +76,7 @@ jobs:
       - name: stop service
         uses: garygrossgarten/github-action-ssh@release
         with:
-          command: /bin/systemctl stop poker
-          host: ${{ secrets.REMOTE_HOST }}
-          username: ${{ secrets.REMOTE_USER }}
-          privateKey: ${{ secrets.SERVER_SSH_KEY}}
-      - name: start service
-        uses: garygrossgarten/github-action-ssh@release
-        with:
-          command: /bin/systemctl start poker
+          command: sudo service poker restart
           host: ${{ secrets.REMOTE_HOST }}
           username: ${{ secrets.REMOTE_USER }}
           privateKey: ${{ secrets.SERVER_SSH_KEY}}
