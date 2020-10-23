@@ -73,7 +73,7 @@ jobs:
     needs: [deploy]
     runs-on: ubuntu-latest
     steps:
-      - name: stop service
+      - name: restart service
         uses: garygrossgarten/github-action-ssh@release
         with:
           command: sudo service poker restart
