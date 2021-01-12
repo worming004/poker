@@ -7,6 +7,7 @@ var scrumCards Cards
 
 func init() {
 	scrumCards = []Card{
+		"0",
 		"1",
 		"2",
 		"3",
