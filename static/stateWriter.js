@@ -1,6 +1,4 @@
 function updateBoardState(board, selectionDiv, roomActions, playerName, playerID, roomID, state) {
-  console.log(state);
-
   applyBoardState(board, state, roomID);
   applyCardStyle(selectionDiv, state, playerID);
 
