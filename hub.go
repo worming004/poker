@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"net/http"
 	"strconv"
 	"time"
@@ -21,6 +22,13 @@ type PlayerSelectionState struct {
 	Player string
 	PlayerState
 	Card string
+}
+
+func (pss PlayerSelectionState) Validate() (bool, error) {
+	if len(pss.Player) > 35 {
+		return false, errors.New("player name too long")
+	}
+	return true, nil
 }
 
 func newPlayerSelectionState(playerName string) *PlayerSelectionState {
@@ -108,7 +116,10 @@ func (h *hub) handleCommand(ctx context.Context, cmd ExternalCommand, currentCli
 		time.AfterFunc(4*time.Hour, func() { h.deleteRoom(ctx, cmd.RoomID) })
 	}
 	room.Connections[currentClient] = currentClient.Conn
-	realCommand.Do(ctx, room)
+	err := realCommand.Do(ctx, room)
+	if err != nil {
+		return
+	}
 	room.broadcastCurrentState()
 }
 
