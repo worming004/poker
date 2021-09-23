@@ -1,6 +1,7 @@
 package main
 
 import (
+	_ "embed"
 	"encoding/json"
 	"html/template"
 	"net/http"
@@ -48,8 +49,13 @@ type Model struct {
 	Hostname string
 }
 
+var (
+	//go:embed html/index.gohtml
+	indexPage string
+)
+
 func getIndexHandler(m Model) http.HandlerFunc {
-	tmpl := template.Must(template.ParseGlob("./html/index.gohtml"))
+	tmpl := template.Must(template.New("index").Parse(indexPage))
 	return func(w http.ResponseWriter, r *http.Request) {
 		err := tmpl.Execute(w, m)
 		if err != nil {
