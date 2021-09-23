@@ -8,18 +8,16 @@ import (
 )
 
 type conf struct {
-	password, hostname, port string
+	password, port string
 }
 
 var password *string = flag.String("password", "", "password to access")
-var hostname *string = flag.String("hostname", "http://poker.craftlabit.be", "hostname of host")
 var port *string = flag.String("port", "8000", "port of host")
 
 func main() {
 	flag.Parse()
 	c := conf{
 		password: *password,
-		hostname: *hostname,
 		port:     *port,
 	}
 	h := newHub(c)

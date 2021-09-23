@@ -7,7 +7,7 @@
     <title>Poker planning</title>
     <link rel="stylesheet" href="static/main.css">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-    <script src="{{ .Hostname }}/static/stateWriter.js"></script>
+    <script src="/static/stateWriter.js"></script>
     <script>
 
         var conn;
@@ -30,7 +30,7 @@
             }
 
             if (window['WebSocket']) {
-                $.getJSON('{{ .Hostname }}/newid', function (data) {
+                $.getJSON('/newid', function (data) {
                     playerID = data.id
                     const urlParams = new URLSearchParams(window.location.search);
                     const password = urlParams.get('password')

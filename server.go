@@ -16,7 +16,7 @@ var defaultLogger *logrus.Logger
 
 func getApplicationServer(h *hub, c conf) *http.Server {
 	mux := mux.NewRouter()
-	indexHandler := getIndexHandler(Model{Hostname: c.hostname})
+	indexHandler := getIndexHandler()
 	mux.HandleFunc("/", indexHandler).Methods("GET")
 	// Use extra {route} in order to allow file discovery. https://stackoverflow.com/questions/21234639/golang-gorilla-mux-with-http-fileserver-returning-404
 	mux.Handle("/static/{route}", getStaticHandler("/static/")).Methods("GET")
@@ -45,19 +45,15 @@ func getStaticHandler(prefix string) http.Handler {
 	return http.StripPrefix(prefix, fs)
 }
 
-type Model struct {
-	Hostname string
-}
-
 var (
 	//go:embed html/index.gohtml
 	indexPage string
 )
 
-func getIndexHandler(m Model) http.HandlerFunc {
+func getIndexHandler() http.HandlerFunc {
 	tmpl := template.Must(template.New("index").Parse(indexPage))
 	return func(w http.ResponseWriter, r *http.Request) {
-		err := tmpl.Execute(w, m)
+		err := tmpl.Execute(w, nil)
 		if err != nil {
 			logrus.Panic(err)
 		}
