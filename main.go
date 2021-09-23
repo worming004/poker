@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"os"
 	"time"
 
 	"github.com/sirupsen/logrus"
@@ -11,15 +12,11 @@ type conf struct {
 	password, port string
 }
 
-var password *string = flag.String("password", "", "password to access")
-var port *string = flag.String("port", "8000", "port of host")
+var passwordFlag *string = flag.String("password", "", "password to access")
+var portFlag *string = flag.String("port", "8000", "port of host")
 
 func main() {
-	flag.Parse()
-	c := conf{
-		password: *password,
-		port:     ":" + *port,
-	}
+	c := getConfig()
 	h := newHub(c)
 	server := getApplicationServer(h, c)
 	go func() {
@@ -33,4 +30,20 @@ func main() {
 
 	logrus.Info("Starting server")
 	logrus.Panic(server.ListenAndServe())
+}
+
+func getConfig() conf {
+	flag.Parse()
+	var password string
+	passwordEnv := os.Getenv("PASSWORD")
+	if len(passwordEnv) > 0 {
+		password = passwordEnv
+	} else {
+		password = *passwordFlag
+	}
+	c := conf{
+		password: password,
+		port:     ":" + *portFlag,
+	}
+	return c
 }

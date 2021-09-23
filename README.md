@@ -21,10 +21,8 @@ show help with `poker -h`
 git clone https://www.github.com/worming004/poker
 cd poker
 docker build -t poker .
-docker run --rm -p 8000:8000 poker
+docker run --rm -p 8000:8000 [-e PASSWORD=<your password>] poker
 ```
-
-It doesn't support for now password management.
 
 ## password
 
