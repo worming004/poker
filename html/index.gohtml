@@ -34,7 +34,11 @@
                     playerID = data.id
                     const urlParams = new URLSearchParams(window.location.search);
                     const password = urlParams.get('password')
-                    conn = new WebSocket('ws://' + document.location.host + `/connect?password=${password}&playerid=${playerID}`);
+                    let protocol = 'ws://';
+                    if (location.protocol === 'https:') {
+                        protocol = 'wss://'
+                    }
+                    conn = new WebSocket(protocol + document.location.host + `/connect?password=${password}&playerid=${playerID}`);
                     conn.onclose = function (evt) {
                         if (evt.code === 1006) {
                             alert('connection closed. Probably you missed the password');
