@@ -18,11 +18,10 @@ func main() {
 	flag.Parse()
 	c := conf{
 		password: *password,
-		port:     *port,
+		port:     ":" + *port,
 	}
 	h := newHub(c)
 	server := getApplicationServer(h, c)
-
 	go func() {
 		ticker := time.NewTicker(12 * time.Hour)
 		logger := logrus.New()
