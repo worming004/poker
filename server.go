@@ -19,7 +19,7 @@ func getApplicationServer(h *hub, c conf) *http.Server {
 	mux.HandleFunc("/", indexHandler).Methods("GET")
 	// Use extra {route} in order to allow file discovery. https://stackoverflow.com/questions/21234639/golang-gorilla-mux-with-http-fileserver-returning-404
 	mux.Handle("/static/{route}", getStaticHandler("/static/")).Methods("GET")
-	mux.HandleFunc("/connect", h.handleSocket).Methods("GET")
+	mux.Handle("/connect", h).Methods("GET")
 	mux.HandleFunc("/cards", getCardHandler(h)).Methods("GET")
 	mux.HandleFunc("/newid", getNewIDHandler()).Methods("GET")
 	mux.Use(loggerMiddleware, allowCors)

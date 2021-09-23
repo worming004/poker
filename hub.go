@@ -123,29 +123,29 @@ func (h *hub) handleCommand(ctx context.Context, cmd ExternalCommand, currentCli
 	room.broadcastCurrentState()
 }
 
-func (h *hub) handleSocket(w http.ResponseWriter, r *http.Request) {
+func (h *hub) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	password := r.URL.Query()["password"][0]
 	ctx := r.Context()
-	log := getLogger(ctx)
-	log.Println("Attempt to connect")
-	if password != h.password {
-		log.Println("socket invalid due to wrong password")
+	logger := getLogger(ctx)
+	logger.Println("Attempt to connect")
+	if len(h.password) != 0 && password != h.password {
+		logger.Println("socket invalid due to wrong password")
 		return
 	}
 	playerid, err := strconv.Atoi(r.URL.Query()["playerid"][0])
 	if err != nil {
-		log.Printf("not able to parse %s as int\n", r.URL.Query()["playerid"][0])
+		logger.Printf("not able to parse %s as int\n", r.URL.Query()["playerid"][0])
 		return
 	}
 	if playerid == 0 {
-		log.Printf("invalid playerID %d\n", playerid)
+		logger.Printf("invalid playerID %d\n", playerid)
 		return
 	}
-	log.Println("opening socket")
+	logger.Println("opening socket")
 	conn := websocket.Upgrader{}
 	c, err := conn.Upgrade(w, r, nil)
 	if err != nil {
-		log.Panic(err)
+		logger.Panic(err)
 	}
 	client := &virtualClient{h, c, 0, 0}
 	h.clients[client] = true
@@ -154,10 +154,10 @@ func (h *hub) handleSocket(w http.ResponseWriter, r *http.Request) {
 		var cmd ExternalCommand
 		_, message, err := c.ReadMessage()
 		ctx = pushNewSendID(ctx)
-		log = getLogger(ctx)
+		logger = getLogger(ctx)
 		if err != nil {
 			h.disconnect(ctx, client)
-			log.Printf("close ws because of %s\n", err)
+			logger.Printf("close ws because of %s\n", err)
 			break
 		}
 		err = json.Unmarshal(message, &cmd)
