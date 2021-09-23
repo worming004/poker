@@ -24,7 +24,7 @@ func getApplicationServer(h *hub, c conf) *http.Server {
 	mux.HandleFunc("/newid", getNewIDHandler()).Methods("GET")
 	mux.Use(loggerMiddleware, allowCors)
 	return &http.Server{
-		Addr:    "localhost:" + c.port,
+		Addr:    c.port,
 		Handler: mux,
 	}
 }
